@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gyroscope Accuracy Comparison</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        .buttons {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Gyroscope Accuracy Comparison</h1>
+    <p id="status">Waiting for gyroscope data...</p>
+
+    <div class="buttons">
+        <button id="start-btn">Start Collecting</button>
+        <button id="stop-btn" disabled>Stop Collecting</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Timestamp</th>
+                <th>Alpha (Z-axis)</th>
+                <th>Beta (X-axis)</th>
+                <th>Gamma (Y-axis)</th>
+            </tr>
+        </thead>
+        <tbody id="data-table-body">
+            <!-- Data will be dynamically added here -->
+        </tbody>
+    </table>
+
+    <script>
+        let isCollecting = false;
+        const dataTableBody = document.getElementById('data-table-body');
+        const statusElement = document.getElementById('status');
+        const startButton = document.getElementById('start-btn');
+        const stopButton = document.getElementById('stop-btn');
+        let intervalId;
+
+        // Check if DeviceMotionEvent is supported
+        if (window.DeviceMotionEvent) {
+            statusElement.textContent = "DeviceMotionEvent is supported. Ready to collect data.";
+        } else {
+            statusElement.textContent = "DeviceMotionEvent is not supported on this device/browser.";
+            startButton.disabled = true;
+        }
+
+        function startCollecting() {
+            isCollecting = true;
+            statusElement.textContent = "Collecting data...";
+            startButton.disabled = true;
+            stopButton.disabled = false;
+
+            // Start collecting data at fixed intervals (e.g., 500ms)
+            intervalId = setInterval(() => {
+                if (window.DeviceMotionEvent) {
+                    window.addEventListener("devicemotion", handleMotionEvent, { once: true });
+                }
+            }, 500);
+        }
+
+        function stopCollecting() {
+            isCollecting = false;
+            statusElement.textContent = "Data collection stopped.";
+            startButton.disabled = false;
+            stopButton.disabled = true;
+
+            clearInterval(intervalId);
+        }
+
+        function handleMotionEvent(event) {
+            if (!isCollecting) return;
+
+            const rotationRate = event.rotationRate;
+            const timestamp = new Date().toISOString();
+
+            const data = {
+                timestamp,
+                alpha: rotationRate.alpha?.toFixed(2) || "0",
+                beta: rotationRate.beta?.toFixed(2) || "0",
+                gamma: rotationRate.gamma?.toFixed(2) || "0"
+            };
+
+            // Add data to the table
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${data.timestamp}</td>
+                <td>${data.alpha}</td>
+                <td>${data.beta}</td>
+                <td>${data.gamma}</td>
+            `;
+            dataTableBody.appendChild(row);
+
+            // Ensure the latest data is visible
+            row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // Button event listeners
+        startButton.addEventListener('click', startCollecting);
+        stopButton.addEventListener('click', stopCollecting);
+    </script>
+</body>
+</html>
