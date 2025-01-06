@@ -1,1 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gyroscope Sensor Values</title>
+</head>
+<body>
+    <h1>Gyroscope Sensor Values</h1>
+    <p id="gyroValues">Waiting for sensor data...</p>
 
+    <script>
+        // Check if DeviceOrientationEvent is supported
+        if (window.DeviceOrientationEvent) {
+            window.addEventListener("deviceorientation", (event) => {
+                const alpha = event.alpha; // Rotation around Z-axis
+                const beta = event.beta;  // Rotation around X-axis
+                const gamma = event.gamma; // Rotation around Y-axis
+                
+                document.getElementById("gyroValues").textContent = 
+                    `Alpha (Z-axis): ${alpha?.toFixed(2)}°, ` +
+                    `Beta (X-axis): ${beta?.toFixed(2)}°, ` +
+                    `Gamma (Y-axis): ${gamma?.toFixed(2)}°`;
+            });
+        } else {
+            document.getElementById("gyroValues").textContent = 
+                "DeviceOrientationEvent is not supported on your device.";
+        }
+
+        // Optionally, check for DeviceMotionEvent for gyroscope rates
+        if (window.DeviceMotionEvent) {
+            window.addEventListener("devicemotion", (event) => {
+                const gyro = event.rotationRate;
+                if (gyro) {
+                    console.log(
+                        `Gyroscope rates: ` +
+                        `Alpha: ${gyro.alpha?.toFixed(2)}°, ` +
+                        `Beta: ${gyro.beta?.toFixed(2)}°, ` +
+                        `Gamma: ${gyro.gamma?.toFixed(2)}°`
+                    );
+                }
+            });
+        } else {
+            console.log("DeviceMotionEvent is not supported on your device.");
+        }
+    </script>
+</body>
+</html>
